@@ -1,0 +1,28 @@
+name: KSAdmin
+main: KSAdmin
+version: 0.1
+
+depend: [Multiverse-Core]
+
+commands:
+   cwarps:
+      description: Accesses the Categorized Warps
+      usage: /cwarps [Category] [Page Number]
+   flower:
+      description: Allows you to flower a radius
+      usage: /flower <radius>
+   ls:
+      description: Lists Online Players
+      usage: /ls
+   quartz:
+      description: Trades 10 NetherRack for 1 Quartz
+      usage: /quartz
+
+permissions:
+  kadmin.*:
+    description: Gives access to all kadmin commands
+    children:
+      kadmin.flower: true
+  kadmin.flower:
+    description: Bonemeals a radius
+    default: op
