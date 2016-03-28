@@ -1,8 +1,8 @@
 name: KSAdmin
-main: KSAdmin
+main: ksadmin.KSAdmin
 version: 0.1
 
-depend: [Multiverse-Core]
+#depend: [Multiverse-Core]
 
 commands:
    cwarps:

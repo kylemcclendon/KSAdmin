@@ -1,41 +1,76 @@
 package feather_clip
 
-/**
-  * Created by Kyle on 3/27/2016.
-  */
-class FeatherClip {
-  @EventHandler(ignoreCancelled = true) def ClipWing(event: Nothing) {
-    val player: Nothing = event.getPlayer
+import org.bukkit.EntityEffect
+import org.bukkit.GameMode
+import org.bukkit.Material
+import org.bukkit.Sound
+import org.bukkit.entity.Chicken
+import org.bukkit.entity.Entity
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.player.PlayerInteractAtEntityEvent
+import org.bukkit.inventory.{EquipmentSlot, ItemStack}
+import org.bukkit.event.Listener
+
+class FeatherClip extends Listener {
+  @EventHandler(ignoreCancelled = true)
+  def ClipWing(event: PlayerInteractAtEntityEvent) {
+    val player: Player = event.getPlayer
     if (player.hasPermission("permissions.restrict.nointeract")) {
       event.setCancelled(true)
       return
     }
-    val e: Nothing = event.getRightClicked
-    val eloc: Nothing = e.getLocation
-    if ((player.getItemInHand.getType eq Material.SHEARS) && (e.getType eq EntityType.CHICKEN)) {
-      val c: Nothing = e.asInstanceOf[Nothing]
-      val i: Nothing = new Nothing(Material.FEATHER, 1)
+    val e = event.getRightClicked
+    event.getHand match{
+      case EquipmentSlot.HAND =>
+        clipWing(player, e, "Main")
+      case EquipmentSlot.OFF_HAND =>
+        clipWing(player, e, "Off")
+    }
+  }
+
+  private def clipWing(player: Player, entity: Entity, hand: String) = {
+    val item =if (hand == "Main") player.getInventory.getItemInMainHand else player.getInventory.getItemInOffHand
+    if ((item.getType eq Material.SHEARS) && (entity.getType eq EntityType.CHICKEN)) {
+      val eloc = entity.getLocation
+      val c: Chicken = entity.asInstanceOf[Chicken]
+      val i: ItemStack = new ItemStack(Material.FEATHER, 1)
       eloc.getWorld.dropItemNaturally(eloc, i)
-      if (player.getGameMode ne GameMode.CREATIVE) {
-        player.getItemInHand.setDurability((player.getItemInHand.getDurability + 1).asInstanceOf[Short])
-        if (player.getItemInHand.getDurability >= 238) {
-          player.getWorld.playSound(player.getLocation, Sound.ITEM_BREAK, 1.0F, 1.0F)
-          player.setItemInHand(null)
-        }
-      }
+
+      val modifiedItem = setItemDurability(item, player.getGameMode)
+      if(hand == "Main") player.getInventory.setItemInMainHand(modifiedItem) else player.getInventory.setItemInOffHand(modifiedItem)
+      if(modifiedItem == null) player.getWorld.playSound(player.getLocation, Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F)
+
       if (c.getHealth > 0.0D) {
         c.setHealth(c.getHealth - 1.0D)
         c.playEffect(EntityEffect.HURT)
         if (c.getAge >= 0) {
-          player.getWorld.playSound(eloc, Sound.CHICKEN_HURT, 10.0F, 1.0F)
+          player.getWorld.playSound(eloc, Sound.ENTITY_CHICKEN_HURT, 10.0F, 1.0F)
         }
         else {
-          player.getWorld.playSound(eloc, Sound.CHICKEN_HURT, 10.0F, 2.0F)
+          player.getWorld.playSound(eloc, Sound.ENTITY_CHICKEN_HURT, 10.0F, 2.0F)
         }
         if (c.getHealth <= 0.0D) {
           c.damage(200.0D)
-          eloc.getWorld.dropItemNaturally(eloc, new Nothing(Material.RAW_CHICKEN, 1))
+          eloc.getWorld.dropItemNaturally(eloc, new ItemStack(Material.RAW_CHICKEN, 1))
         }
+      }
+    }
+  }
+
+  private def setItemDurability(item: ItemStack, gameMode: GameMode): ItemStack = {
+    if (gameMode == GameMode.CREATIVE) {
+      item
+    }
+    else {
+      if (item.getDurability >= 238) {
+        null
+      }
+      else{
+        val newItemStack = item
+        newItemStack.setDurability((newItemStack.getDurability + 1).toShort)
+        newItemStack
       }
     }
   }

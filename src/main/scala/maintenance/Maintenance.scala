@@ -2,24 +2,19 @@ package maintenance
 
 import java.util.logging.Logger
 
-import net.kylemc.kadmin.Kadmin
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
+import org.bukkit.event.player.PlayerLoginEvent
+import org.bukkit.event.{EventPriority, Listener}
+import org.bukkit.plugin.Plugin
 
-/**
-  * Created by Kyle on 3/27/2016.
-  */
-class Maintenance {
-  private[kadmin] val log: Logger = Logger.getLogger("Minecraft")
-  private val plugin: Kadmin = null
 
-  def this(instance: Kadmin) {
-    this()
-    this.plugin = instance
-    this.plugin.getServer.getPluginManager.registerEvents(this, this.plugin)
-  }
+class Maintenance extends Listener{
+  val log: Logger = Logger.getLogger("Minecraft")
 
-  @org.bukkit.event.EventHandler(priority = EventPriority.LOWEST) def login(event: Nothing) {
-    val p: Nothing = event.getPlayer
-    if ((org.bukkit.Bukkit.hasWhitelist) && (!p.isOp)) {
+  @org.bukkit.event.EventHandler(priority = EventPriority.LOWEST) def login(event: PlayerLoginEvent) {
+    val p = event.getPlayer
+    if (Bukkit.hasWhitelist && !p.isOp) {
       event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Server Under Maintenance.\n Watch from direct.kylemc.net/map")
     }
   }

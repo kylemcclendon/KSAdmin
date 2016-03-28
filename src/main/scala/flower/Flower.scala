@@ -1,12 +1,17 @@
 package flower
 
+import org.bukkit.block.{Block, BlockFace}
+import org.bukkit.{ChatColor, Location, Material}
+import org.bukkit.command.{Command, CommandExecutor, CommandSender}
+import org.bukkit.entity.Player
+
 /**
   * Created by Kyle on 3/27/2016.
   */
-class Flower {
-  public Boolean onCommand(sender: Nothing, cmd: Nothing, label: String, args: Array[String]) {
-    if ((sender.isInstanceOf[Nothing])) {
-      val player: Nothing = sender.asInstanceOf[Nothing]
+class Flower extends CommandExecutor{
+  def onCommand(sender: CommandSender, cmd: Command, label: String, args: Array[String]): Boolean =  {
+    if (sender.isInstanceOf[Player]) {
+      val player: Player = sender.asInstanceOf[Player]
       if (cmd.getName.equalsIgnoreCase("flower")) {
         if (!player.hasPermission("kadmin.flower")) {
           player.sendMessage(ChatColor.RED + "You do not have permission to do this!")
@@ -16,7 +21,7 @@ class Flower {
           player.sendMessage(ChatColor.RED + "Usage: /flower <radius>")
           return true
         }
-        val playerLoc: Nothing = player.getLocation
+        val playerLoc: Location = player.getLocation
         val pX: Double = playerLoc.getX
         val pY: Double = playerLoc.getY
         val pZ: Double = playerLoc.getZ
@@ -25,10 +30,9 @@ class Flower {
           radius = args(0).toInt
         }
         catch {
-          case e: NumberFormatException => {
+          case e: NumberFormatException =>
             player.sendMessage(ChatColor.RED + "Usage: /flower <radius>")
             return true
-          }
         }
         var x: Int = -radius
         while (x <= radius) {
@@ -39,9 +43,9 @@ class Flower {
                 var z: Int = -radius
                 while (z <= radius) {
                   {
-                    val b: Nothing = player.getWorld.getBlockAt(pX.toInt + x, pY.toInt + y, pZ.toInt + z)
+                    val b: Block = player.getWorld.getBlockAt(pX.toInt + x, pY.toInt + y, pZ.toInt + z)
                     if ((b.getType eq Material.GRASS) && (b.getRelative(BlockFace.UP).getType eq Material.AIR) && (b.getRelative(BlockFace.UP).getLightLevel > 7)) {
-                      val c: Nothing = b.getRelative(BlockFace.UP)
+                      val c: Block = b.getRelative(BlockFace.UP)
                       val r: Int = (75.0D * Math.random).toInt
                       if (r == 1) {
                         c.setType(Material.DOUBLE_PLANT)
@@ -91,6 +95,6 @@ class Flower {
     else {
       sender.sendMessage(ChatColor.RED + "Command can only be used by a player!")
     }
-    return true
+    true
   }
 }

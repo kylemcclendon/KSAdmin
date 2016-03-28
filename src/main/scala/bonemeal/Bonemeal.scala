@@ -2,37 +2,44 @@ package bonemeal
 
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.TreeType
+import org.bukkit.{GameMode, TreeType}
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.{EquipmentSlot, ItemStack}
 
-class Bonemeal {
+class Bonemeal extends Listener{
   @SuppressWarnings(Array("deprecation"))
   @EventHandler(ignoreCancelled = true) def onInteract(event: PlayerInteractEvent) {
     if (event.getAction eq Action.RIGHT_CLICK_BLOCK) {
-      val item = event.getItem
+      var item = event.getItem
       var block = event.getClickedBlock
       if (block == null || !isBonemeal(item)) {
         return
       }
       block.getType match {
-        case Material.CARROT =>
-        case Material.CROPS =>
-        case Material.MELON_STEM =>
-        case Material.NETHER_WARTS =>
-        case Material.POTATO =>
-        case Material.PUMPKIN_STEM =>
+        case Material.CARROT | Material.CROPS | Material.MELON_STEM | Material.NETHER_WARTS | Material.POTATO | Material.PUMPKIN_STEM =>
           block.setData(7.toByte)
+          event.getHand match {
+            case EquipmentSlot.OFF_HAND =>
+              event.getPlayer.getInventory.setItemInOffHand(setItemAmount(item, event.getPlayer.getGameMode))
+            case EquipmentSlot.HAND =>
+              event.getPlayer.getInventory.setItemInMainHand(setItemAmount(item, event.getPlayer.getGameMode))
+          }
         case Material.SAPLING =>
-          var l: Location = block.getLocation
-          var bigtree: Boolean = false
+          event.getHand match {
+            case EquipmentSlot.OFF_HAND =>
+              event.getPlayer.getInventory.setItemInOffHand(setItemAmount(item, event.getPlayer.getGameMode))
+            case EquipmentSlot.HAND =>
+              event.getPlayer.getInventory.setItemInMainHand(setItemAmount(item, event.getPlayer.getGameMode))
+          }
+          var l = block.getLocation
+          var bigtree = false
           var treeType: TreeType = null
-          val data: Byte = block.getData
+          val data = block.getData
           data match {
             case 0 =>
               treeType = TreeType.TREE
@@ -86,7 +93,7 @@ class Bonemeal {
             block.getRelative(BlockFace.SOUTH_EAST).setType(Material.AIR)
           }
           l = block.getLocation
-          val grew: Boolean = l.getWorld.generateTree(l, treeType)
+          val grew = l.getWorld.generateTree(l, treeType)
           if (!grew) {
             if (bigtree) {
               block.setTypeIdAndData(6, data, false)
@@ -106,22 +113,38 @@ class Bonemeal {
   }
 
   @SuppressWarnings(Array("deprecation")) private def isBigTree(block: Block, data: Byte): Block = {
-    if ((block.getRelative(BlockFace.NORTH) != null) && (block.getRelative(BlockFace.NORTH).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.NORTH).getData eq data) && (block.getRelative(BlockFace.EAST) != null) && (block.getRelative(BlockFace.EAST).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.EAST).getData eq data) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.EAST) != null) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.EAST).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.EAST).getData eq data)) {
+    if ((block.getRelative(BlockFace.NORTH) != null) && block.getRelative(BlockFace.NORTH).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.NORTH).getData == data) && (block.getRelative(BlockFace.EAST) != null) && block.getRelative(BlockFace.EAST).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.EAST).getData == data) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.EAST) != null) && block.getRelative(BlockFace.NORTH).getRelative(BlockFace.EAST).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.EAST).getData == data)) {
       return block.getRelative(BlockFace.NORTH)
     }
-    if ((block.getRelative(BlockFace.NORTH) != null) && (block.getRelative(BlockFace.NORTH).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.NORTH).getData eq data) && (block.getRelative(BlockFace.WEST) != null) && (block.getRelative(BlockFace.WEST).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.WEST).getData eq data) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.WEST) != null) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.WEST).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.WEST).getData eq data)) {
+    if ((block.getRelative(BlockFace.NORTH) != null) && block.getRelative(BlockFace.NORTH).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.NORTH).getData == data) && (block.getRelative(BlockFace.WEST) != null) && block.getRelative(BlockFace.WEST).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.WEST).getData == data) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.WEST) != null) && block.getRelative(BlockFace.NORTH).getRelative(BlockFace.WEST).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.NORTH).getRelative(BlockFace.WEST).getData == data)) {
       return block.getRelative(BlockFace.NORTH).getRelative(BlockFace.WEST)
     }
-    if ((block.getRelative(BlockFace.SOUTH) != null) && (block.getRelative(BlockFace.SOUTH).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.SOUTH).getData eq data) && (block.getRelative(BlockFace.WEST) != null) && (block.getRelative(BlockFace.WEST).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.WEST).getData eq data) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.WEST) != null) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.WEST).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.WEST).getData eq data)) {
+    if ((block.getRelative(BlockFace.SOUTH) != null) && block.getRelative(BlockFace.SOUTH).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.SOUTH).getData == data) && (block.getRelative(BlockFace.WEST) != null) && block.getRelative(BlockFace.WEST).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.WEST).getData == data) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.WEST) != null) && block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.WEST).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.WEST).getData == data)) {
       return block.getRelative(BlockFace.WEST)
     }
-    if ((block.getRelative(BlockFace.SOUTH) != null) && (block.getRelative(BlockFace.SOUTH).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.SOUTH).getData eq data) && (block.getRelative(BlockFace.EAST) != null) && (block.getRelative(BlockFace.EAST).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.EAST).getData eq data) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.EAST) != null) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.EAST).getType.equals(Material.SAPLING)) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.EAST).getData eq data)) {
+    if ((block.getRelative(BlockFace.SOUTH) != null) && block.getRelative(BlockFace.SOUTH).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.SOUTH).getData == data) && (block.getRelative(BlockFace.EAST) != null) && block.getRelative(BlockFace.EAST).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.EAST).getData == data) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.EAST) != null) && block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.EAST).getType.equals(Material.SAPLING) && (block.getRelative(BlockFace.SOUTH).getRelative(BlockFace.EAST).getData == data)) {
       return block
     }
     null
   }
 
   private def isBonemeal(item: ItemStack): Boolean = {
-    (item != null) && (item.getType eq Material.INK_SACK) && (item.getDurability eq 15)
+    (item != null) && (item.getType eq Material.INK_SACK) && (item.getDurability == 15)
+  }
+
+  private def setItemAmount(item: ItemStack, gameMode: GameMode): ItemStack = {
+    if (gameMode == GameMode.CREATIVE) {
+      item
+    }
+    else {
+      if (item.getAmount > 1) {
+        val newItemStack = item
+        newItemStack.setAmount(newItemStack.getAmount - 1)
+        newItemStack
+      }
+      else {
+        null
+      }
+    }
   }
 }
