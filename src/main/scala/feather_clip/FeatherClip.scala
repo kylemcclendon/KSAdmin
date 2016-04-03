@@ -1,17 +1,10 @@
 package feather_clip
 
-import org.bukkit.EntityEffect
-import org.bukkit.GameMode
-import org.bukkit.Material
-import org.bukkit.Sound
-import org.bukkit.entity.Chicken
-import org.bukkit.entity.Entity
-import org.bukkit.entity.EntityType
-import org.bukkit.entity.Player
-import org.bukkit.event.EventHandler
+import org.bukkit.{Material, ChatColor, Sound, EntityEffect, GameMode}
+import org.bukkit.entity.{Chicken, Entity, EntityType, Player}
+import org.bukkit.event.{EventHandler, Listener}
 import org.bukkit.event.player.PlayerInteractAtEntityEvent
 import org.bukkit.inventory.{EquipmentSlot, ItemStack}
-import org.bukkit.event.Listener
 
 class FeatherClip extends Listener {
   @EventHandler(ignoreCancelled = true)
@@ -27,6 +20,8 @@ class FeatherClip extends Listener {
         clipWing(player, e, "Main")
       case EquipmentSlot.OFF_HAND =>
         clipWing(player, e, "Off")
+      case _ =>
+        event.getPlayer.sendMessage(ChatColor.DARK_PURPLE + "How the hell did you do that without using your hands?! O_o")
     }
   }
 

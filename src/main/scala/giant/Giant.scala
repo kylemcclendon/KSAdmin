@@ -2,12 +2,14 @@ package giant
 
 import java.util.Random
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters.collectionAsScalaIterableConverter
+import scala.collection.JavaConverters.seqAsJavaListConverter
 import ksadmin.KSAdmin
+import org.bukkit.Bukkit
 import org.bukkit.block.Biome
-import org.bukkit._
+import org.bukkit.{Location, Material, Sound}
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.{Player, _}
+import org.bukkit.entity.{Entity, EntityType, LivingEntity, Player, Zombie}
 import org.bukkit.inventory.ItemStack
 import org.bukkit.craftbukkit.v1_9_R1.entity.CraftGiant
 import org.bukkit.event.{EventHandler, Listener}
@@ -18,7 +20,7 @@ import org.bukkit.util.Vector
 import org.bukkit.event.server.PluginDisableEvent
 
 case class Giant(instance: KSAdmin) extends Listener{
-  var dropTable: List[ItemStack] = Nil
+  var dropsTable: List[ItemStack] = Nil
   private var listSize = 0
   var plugin: Plugin = instance
   initItems()
@@ -41,7 +43,7 @@ case class Giant(instance: KSAdmin) extends Listener{
     im = darmor.getItemMeta
     im.setDisplayName("Spiked Boots")
     val lore = List(org.bukkit.ChatColor.DARK_PURPLE + "Boots infused with gripping iron spikes")
-    im.setLore(lore.toList)
+    im.setLore(lore.asJava)
     dboots.setItemMeta(im)
     darmor.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2)
     dboots.addEnchantment(Enchantment.DURABILITY, 3)
@@ -55,8 +57,8 @@ case class Giant(instance: KSAdmin) extends Listener{
     bow.addEnchantment(Enchantment.DURABILITY, 3)
     val shards = new ItemStack(Material.PRISMARINE_SHARD, 10)
     val netherstar = new ItemStack(Material.NETHER_STAR, 1)
-    dropTable = List(dsword,shards,diamond,dboots,darmor,crystals,diamond,bow,shards,diamond,netherstar)
-    listSize = dropTable.size
+    dropsTable = List(dsword,shards,diamond,dboots,darmor,crystals,diamond,bow,shards,diamond,netherstar)
+    listSize = dropsTable.size
   }
 
   @EventHandler private def playerHurtGiant(event: EntityDamageByEntityEvent) {
@@ -121,7 +123,7 @@ case class Giant(instance: KSAdmin) extends Listener{
       if (index == listSize - 1) {
         index = r.nextInt(listSize)
       }
-      Bukkit.getServer.getWorld(event.getEntity.getWorld.getUID).dropItem(event.getEntity.getLocation, dropTable.get(index))
+      Bukkit.getServer.getWorld(event.getEntity.getWorld.getUID).dropItem(event.getEntity.getLocation, dropsTable(index))
       val potion = new ItemStack(Material.POTION, 1, 8229.toShort)
       Bukkit.getServer.getWorld(event.getEntity.getWorld.getUID).dropItem(event.getEntity.getLocation, potion)
       event.setDroppedExp(200)
@@ -151,7 +153,7 @@ case class Giant(instance: KSAdmin) extends Listener{
   }
 
   private def giantStomp(l: Location, giant: CraftGiant) {
-    val players = Bukkit.getServer.getWorld(l.getWorld.getUID).getPlayers.toList
+    val players = Bukkit.getServer.getWorld(l.getWorld.getUID).getPlayers.asScala
     var close: List[Player] = Nil
     for (p <- players) {
       if (getDistance(l, p.getLocation) <= 10.0D) {
@@ -194,7 +196,7 @@ case class Giant(instance: KSAdmin) extends Listener{
   }
 
   private def giantRoar(l: Location) {
-    val players = Bukkit.getServer.getWorld(l.getWorld.getUID).getPlayers.toList
+    val players = Bukkit.getServer.getWorld(l.getWorld.getUID).getPlayers.asScala
     for (p <- players) if (getDistance(l, p.getLocation) <= 20.0D) {
       l.getWorld.playSound(l, Sound.ENTITY_ENDERDRAGON_GROWL, 6.0F, 0.7F)
       p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 1))
@@ -208,9 +210,9 @@ case class Giant(instance: KSAdmin) extends Listener{
       case player: Player =>
         if(getDistance(player.getLocation, giant.getLocation) < 5.0D){
           if ((player.getInventory.getBoots != null) && (player.getInventory.getBoots.getType eq Material.DIAMOND_BOOTS) && (player.getInventory.getBoots.getItemMeta != null) && (player.getInventory.getBoots.getItemMeta.getDisplayName != null) && player.getInventory.getBoots.getItemMeta.getDisplayName.equals("Spiked Boots"))
-            player.setVelocity(new util.Vector(0, 1, 0))
+            player.setVelocity(new Vector(0, 1, 0))
           else
-            player.setVelocity(new util.Vector(0.0D, 1.5D, 0.0D))
+            player.setVelocity(new Vector(0.0D, 1.5D, 0.0D))
         }
     }
   }
@@ -236,7 +238,7 @@ case class Giant(instance: KSAdmin) extends Listener{
       }
       if (event.getCause.equals(EntityDamageEvent.DamageCause.FALL)) {
         val l = event.getEntity.getLocation
-        val players = Bukkit.getServer.getWorld(l.getWorld.getUID).getPlayers.toList
+        val players = Bukkit.getServer.getWorld(l.getWorld.getUID).getPlayers.asScala
         var close: List[Player] = Nil
         for (p <- players) {
           if (getDistance(l, p.getLocation) <= 20.0D) {

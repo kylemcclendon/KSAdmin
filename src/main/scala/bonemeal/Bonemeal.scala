@@ -1,12 +1,8 @@
 package bonemeal
 
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.{GameMode, TreeType}
-import org.bukkit.block.Block
-import org.bukkit.block.BlockFace
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
+import org.bukkit.{ChatColor, GameMode, Material, TreeType}
+import org.bukkit.block.{Block, BlockFace}
+import org.bukkit.event.{EventHandler, Listener}
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.{EquipmentSlot, ItemStack}
@@ -28,6 +24,8 @@ class Bonemeal extends Listener{
               event.getPlayer.getInventory.setItemInOffHand(setItemAmount(item, event.getPlayer.getGameMode))
             case EquipmentSlot.HAND =>
               event.getPlayer.getInventory.setItemInMainHand(setItemAmount(item, event.getPlayer.getGameMode))
+            case _ =>
+              event.getPlayer.sendMessage(ChatColor.DARK_PURPLE + "How the hell did you do that without using your hands?! O_o")
           }
         case Material.SAPLING =>
           event.getHand match {
@@ -35,6 +33,8 @@ class Bonemeal extends Listener{
               event.getPlayer.getInventory.setItemInOffHand(setItemAmount(item, event.getPlayer.getGameMode))
             case EquipmentSlot.HAND =>
               event.getPlayer.getInventory.setItemInMainHand(setItemAmount(item, event.getPlayer.getGameMode))
+            case _ =>
+              event.getPlayer.sendMessage(ChatColor.DARK_PURPLE + "How the hell did you do that without using your hands?! O_o")
           }
           var l = block.getLocation
           var bigtree = false

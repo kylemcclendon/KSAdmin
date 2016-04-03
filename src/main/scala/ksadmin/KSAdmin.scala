@@ -7,16 +7,16 @@ import org.bukkit.inventory.FurnaceRecipe
 import bonemeal.Bonemeal
 import giant.Giant
 import categorized_warps.CategorizedWarps
-//import exploration.Exploration
 import feather_clip.FeatherClip
-//import flower.Flower
-//import horse_teleport.HorseTeleport
+import flower.Flower
+import horse_teleport.HorseTeleport
 import org.bukkit.Material
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.{ItemStack, ShapedRecipe, ShapelessRecipe}
 import org.bukkit.plugin.java.JavaPlugin
-//import pvp.PVP
-//import timber.Timber
+import pvp.PVP
+import runecraft.RunecraftTeles
+import timber.Timber
 
 class KSAdmin extends JavaPlugin {
   var settingsFile: File = _
@@ -25,15 +25,12 @@ class KSAdmin extends JavaPlugin {
 
   private val bm = new Bonemeal()
   private val cw = CategorizedWarps(this)
-  private val fc: FeatherClip = new FeatherClip
-  private val gi: Giant = Giant(this)
-//  private val ht: HorseTeleport = new HorseTeleport
-//  private val pv: PVP = new PVP
-//  private val tim: Timber = new Timber
-//  private val run: Runecraft_Teles = new Runecraft_Teles
-//  private val exploration = new Exploration
-//  var explorationThread: Thread = _
-//  var threadVar = true
+  private val fc = new FeatherClip
+  private val gi = Giant(this)
+  private val ht = new HorseTeleport
+  private val pvp = new PVP
+  private val tim = new Timber
+  private var rune: RunecraftTeles = null
 
   override def onEnable() = {
     val pm = getServer.getPluginManager
@@ -94,50 +91,37 @@ class KSAdmin extends JavaPlugin {
       val leather: FurnaceRecipe = new FurnaceRecipe(flesh, Material.ROTTEN_FLESH)
       getServer.addRecipe(leather)
     }
-//    if (this.settings.getBoolean("Exploration")) {
-//      explorationThread = new Thread(exploration)
-//      explorationThread.start()
-//    }
     if (this.settings.getBoolean("Feather")) {
       println("feather")
       pm.registerEvents(fc, this)
     }
-//    if (this.settings.getBoolean("Flower")) {
-//      getCommand("flower").setExecutor(new Flower)
-//    }
-    if (this.settings.getBoolean("Giant")) {
-      pm.registerEvents(this.gi, this)
+    if (this.settings.getBoolean("Flower")) {
+      getCommand("flower").setExecutor(new Flower)
     }
-//    if (this.settings.getBoolean("HorseTeleport")) {
-//      pm.registerEvents(this.ht, this)
-//    }
-//    if (this.settings.getBoolean("PVP")) {
-//      pm.registerEvents(this.pv, this)
-//    }
-//    if (this.settings.getBoolean("Runecraft")) {
-//      pm.registerEvents(this.run, this)
-//      this.run.setup
-//    }
-//    if (this.settings.getBoolean("Timber")) {
-//      pm.registerEvents(this.tim, this)
-//    }
+    if (this.settings.getBoolean("Giant")) {
+      pm.registerEvents(gi, this)
+    }
+    if (this.settings.getBoolean("HorseTeleport")) {
+      pm.registerEvents(ht, this)
+    }
+    if (this.settings.getBoolean("PVP")) {
+      pm.registerEvents(pvp, this)
+    }
+    if (this.settings.getBoolean("Runecraft")) {
+      rune = new RunecraftTeles(dFolder.get)
+      pm.registerEvents(rune, this)
+    }
+    if (this.settings.getBoolean("Timber")) {
+      pm.registerEvents(tim, this)
+    }
   }
 
   override def onDisable() {
-//    threadVar = false
-//    try {
-//      System.out.println("Waiting for Exploration thread to end...")
-//      exploration.threadVar = false
-//      explorationThread.join()
-//    }
-//    catch {
-//      case e: InterruptedException => e.printStackTrace()
-        //    }
-        //    if (this.settings.getBoolean("Runecraft")) {
-        //      Runecraft_Teles.writeToFiles
-        //    }
-        getLogger.info("Kadmin disabled")
+    if (this.settings.getBoolean("Runecraft") && rune != null) {
+      rune.writeToFiles()
     }
+    getLogger.info("Kadmin disabled")
+  }
 
   def saveSettings: Boolean = {
     if (!settingsFile.exists) {
