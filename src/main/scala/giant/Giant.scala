@@ -11,7 +11,7 @@ import org.bukkit.{Location, Material, Sound}
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.{Entity, EntityType, LivingEntity, Player, Zombie}
 import org.bukkit.inventory.ItemStack
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftGiant
+import org.bukkit.craftbukkit.v1_10_R1.entity.CraftGiant
 import org.bukkit.event.{EventHandler, Listener}
 import org.bukkit.event.entity.{CreatureSpawnEvent, EntityDamageByEntityEvent, EntityDamageEvent, EntityDeathEvent}
 import org.bukkit.plugin.Plugin
@@ -104,7 +104,7 @@ case class Giant(instance: KSAdmin) extends Listener{
       if (next == 5) {
         val l = event.getLocation
         val g = event.getEntity.getWorld.spawnEntity(l, EntityType.GIANT).asInstanceOf[CraftGiant]
-        g.getHandle.getAttributeInstance(net.minecraft.server.v1_9_R1.GenericAttributes.maxHealth).setValue(200.0D)
+        g.getHandle.getAttributeInstance(net.minecraft.server.v1_10_R1.GenericAttributes.maxHealth).setValue(200.0D)
         g.setHealth(200.0D)
         Bukkit.getWorld(event.getEntity.getWorld.getUID).playSound(l, Sound.ENTITY_ENDERDRAGON_GROWL, 6.0F, 1.0F)
         event.getEntity.remove()

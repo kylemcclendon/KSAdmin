@@ -3,11 +3,8 @@ package maintenance
 import java.util.logging.Logger
 
 import org.bukkit.Bukkit
-import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerLoginEvent
 import org.bukkit.event.{EventPriority, Listener}
-import org.bukkit.plugin.Plugin
-
 
 class Maintenance extends Listener{
   val log: Logger = Logger.getLogger("Minecraft")

@@ -8,13 +8,14 @@ import org.bukkit.block.{Block, BlockFace}
 import org.bukkit.event.{EventHandler, Listener}
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.{EquipmentSlot, ItemStack}
 
 class RunecraftTeles(dFolder: File) extends Listener {
   var wayPoints: Map[Signature, Location] = Map()
   var teles: Map[Location, Signature] = Map()
   val log: Logger = Bukkit.getLogger
-  val airBlocks = Set(Material.AIR, Material.DIRT, Material.GRASS, Material.SAND, Material.STONE, Material.MYCEL, Material.DOUBLE_PLANT, Material.LONG_GRASS)
+  val airBlocks = Set(Material.AIR, Material.DIRT, Material.GRASS, Material.SAND, Material.STONE,
+    Material.MYCEL, Material.DOUBLE_PLANT, Material.LONG_GRASS)
 
   log.info("Reading Waypoints and Teleports files...")
   readFromFiles()
@@ -24,30 +25,25 @@ class RunecraftTeles(dFolder: File) extends Listener {
   @SuppressWarnings(Array("deprecation"))
   @EventHandler(ignoreCancelled = true) def rightClickTele(event: PlayerInteractEvent) {
     val player = event.getPlayer
-    if ((event.getAction eq Action.RIGHT_CLICK_BLOCK) && isTool(player.getItemInHand)) {
+    if ((event.getAction eq Action.RIGHT_CLICK_BLOCK) && (event.getHand eq EquipmentSlot.HAND) && isTool(player.getInventory.getItemInMainHand)) {
       val middleBlock = event.getClickedBlock
-      println(middleBlock)
       if (middleBlock == null) {
         return
       }
-      if (isCompass(middleBlock)) {
+      else if (isCompass(middleBlock)) {
         makeCompass(middleBlock)
-        return
       }
-      if (isWayPointShaped(middleBlock)) {
-        println(middleBlock)
+      else if (isWayPointShaped(middleBlock)) {
         val signature = Signature.readFromWayPoint(middleBlock)
         if (!signature.isValidSignature) {
-          println("bad sig")
           player.sendMessage(ChatColor.RED + "Invalid signature.")
           return
         }
-        println("fine")
         val loc = wayPoints.get(signature)
         if (loc.isEmpty) {
           player.sendMessage(ChatColor.YELLOW + "Waypoint accepted.")
           if (middleBlock.getLocation == null) {
-            System.out.println("bad block, find fix")
+            println("bad block, find fix")
           }
           wayPoints = wayPoints + (signature -> middleBlock.getLocation)
         }
@@ -67,20 +63,23 @@ class RunecraftTeles(dFolder: File) extends Listener {
         val loc = wayPoints.get(signature)
         if (!signature.isValidSignature) {
           val WPsig = teles.get(middleBlock.getLocation)
-          println(WPsig)
-          val WPloc = wayPoints.get(WPsig.get)
-          println(WPloc)
-          if (WPloc != null) {
-            val airloc = findAir(WPloc.get)
-            if (isWayPointShaped(WPloc.get.getBlock) && Signature.readFromWayPoint(WPloc.get.getBlock) == WPsig.get && (airloc != null)) {
-              player.teleport(airloc.add(0.5D, 0.0D, 0.5D))
-              player.sendMessage(ChatColor.YELLOW + "Teleporter used.")
+          if(WPsig.isDefined) {
+            val WPloc = wayPoints.get(WPsig.get)
+            if (WPloc.isDefined) {
+              val airloc = findAir(WPloc.get)
+              if (isWayPointShaped(WPloc.get.getBlock) && Signature.readFromWayPoint(WPloc.get.getBlock) == WPsig.get && (airloc != null)) {
+                player.teleport(airloc.add(0.5D, 0.0D, 0.5D))
+                player.sendMessage(ChatColor.YELLOW + "Teleporter used.")
+              }
+              else {
+                player.sendMessage(ChatColor.RED + "Your way has been barred from the other side.")
+              }
             }
             else {
-              player.sendMessage(ChatColor.RED + "Your way has been barred from the other side.")
+              player.sendMessage(ChatColor.RED + "This tele doesn't go anywhere!")
             }
           }
-          else {
+          else{
             player.sendMessage(ChatColor.RED + "This tele doesn't go anywhere!")
           }
         }
@@ -309,8 +308,8 @@ class RunecraftTeles(dFolder: File) extends Listener {
 
   def writeToFiles() {
     log.info("Writing to Waypoint and Teleports files...")
-    writeWayPointFile("kim_waypoints.txt")
-    writeTeleFile("kim_teles.txt")
+    writeWayPointFile("waypoints.txt")
+    writeTeleFile("teles.txt")
     log.info("Waypoint and Tele files written")
   }
 
@@ -320,40 +319,41 @@ class RunecraftTeles(dFolder: File) extends Listener {
       sb.append(k.toString)
       sb.append("|")
       sb.append(locFormat(v))
-      sb.append('\r')
+      sb.append('\n')
     }
-    sb.setLength(sb.length - 1)
-    var writer: PrintWriter = null
-    try {
-      writer = new PrintWriter(dFolder + "/" + filename, "UTF-8")
-      writer.println(sb.toString)
-      writer.close()
-    }
-    catch {
-      case e: Any => Bukkit.getLogger.severe("Could not find waypoint file")
+    if(sb.nonEmpty) {
+      sb.setLength(sb.size - 1)
+      var writer: PrintWriter = null
+      try {
+        writer = new PrintWriter(dFolder + "/" + filename, "UTF-8")
+        writer.println(sb.toString)
+        writer.close()
+      }
+      catch {
+        case e: Any => Bukkit.getLogger.severe("Could not find waypoint file")
+      }
     }
   }
 
   private def writeTeleFile(filename: String) {
     val sb = new StringBuilder
-    var count = 0
     for((k,v) <- teles){
       sb.append(v.toString)
       sb.append("|")
       sb.append(locFormat(k))
-      if(count < teles.keys.size)
-        sb.append('\n')
-      count += 1
+      sb.append('\n')
     }
-    sb.setLength(sb.length - 1)
-    var writer: PrintWriter = null
-    try {
-      writer = new PrintWriter(dFolder + "/" + filename, "UTF-8")
-      writer.println(sb.toString)
-      writer.close()
-    }
-    catch {
-      case e: Any => Bukkit.getLogger.severe("Could not find tele file")
+    if(sb.nonEmpty){
+      sb.setLength(sb.size - 1)
+      var writer: PrintWriter = null
+      try {
+        writer = new PrintWriter(dFolder + "/" + filename, "UTF-8")
+        writer.println(sb.toString)
+        writer.close()
+      }
+      catch {
+        case e: Any => Bukkit.getLogger.severe("Could not find tele file")
+      }
     }
   }
 
@@ -370,14 +370,14 @@ class RunecraftTeles(dFolder: File) extends Listener {
     wayPoints = Map()
     teles = Map()
     try {
-      readFromWayPointFile("kim_waypoints.txt")
+      readFromWayPointFile("waypoints.txt")
     }
     catch {
       case e: FileNotFoundException => Bukkit.getLogger.severe("Could not load waypoint file!")
       case e: IOException => Bukkit.getLogger.severe("Problem loading waypoints")
     }
     try {
-      readFromTeleFile("kim_teles.txt")
+      readFromTeleFile("teles.txt")
     }
     catch {
       case e: FileNotFoundException => Bukkit.getLogger.severe("Could not load tele file!")
@@ -390,8 +390,8 @@ class RunecraftTeles(dFolder: File) extends Listener {
     try {
       val br: BufferedReader = new BufferedReader(new FileReader(dFolder + "/" + filename))
       var line: String = null
-      while ({ line = br.readLine() ; line != null } ) {
-        addToHash(line, true)
+      while ({ line = br.readLine(); line != null } ) {
+        addToHash(line, isWayPoint = true)
       }
       br.close()
     }
@@ -405,8 +405,8 @@ class RunecraftTeles(dFolder: File) extends Listener {
     try {
       val br: BufferedReader = new BufferedReader(new FileReader(dFolder + "/" + filename))
       var line: String = null
-      while ((line = br.readLine) != null) {
-        addToHash(line, false)
+      while ({ line = br.readLine(); line != null } ) {
+        addToHash(line, isWayPoint = false)
       }
       br.close()
     }
@@ -418,14 +418,6 @@ class RunecraftTeles(dFolder: File) extends Listener {
   @SuppressWarnings(Array("deprecation")) private def addToHash(line: String, isWayPoint: Boolean) {
     val pieces: Array[String] = line.split("\\|")
     val s = new Signature(airBlocks)
-    println(pieces(0))
-    println(pieces(1))
-    println(pieces(2))
-    println(pieces(3))
-    println(pieces(4))
-    println(pieces(5))
-    println(pieces(6))
-    println(pieces(7))
     s.north = Material.getMaterial(pieces(0).toInt)
     s.south = Material.getMaterial(pieces(1).toInt)
     s.east = Material.getMaterial(pieces(2).toInt)
@@ -434,7 +426,7 @@ class RunecraftTeles(dFolder: File) extends Listener {
     s.southD = pieces(5).toByte
     s.eastD = pieces(6).toByte
     s.westD = pieces(7).toByte
-    val l: Location = new Location(Bukkit.getServer.getWorld(pieces(8)), pieces(9).toDouble, pieces(10).toDouble, pieces(11).toDouble)
+    val l = new Location(Bukkit.getServer.getWorld(pieces(8)), pieces(9).toDouble, pieces(10).toDouble, pieces(11).toDouble)
     if (isWayPoint) {
       wayPoints = wayPoints + (s -> l)
     }

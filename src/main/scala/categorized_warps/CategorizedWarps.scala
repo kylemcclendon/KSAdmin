@@ -8,7 +8,6 @@ import org.bukkit.{Bukkit, ChatColor}
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
@@ -120,7 +119,7 @@ case class CategorizedWarps(instance: KSAdmin) extends Listener with CommandExec
       else {
         sender.sendMessage(ChatColor.RED + "Usage: /cwarps [category] [page number]")
       }
-      true
+      return true
     }
     false
   }

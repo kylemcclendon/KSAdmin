@@ -45,17 +45,17 @@ class Signature(airBlocks: Set[Material]) {
 
   @SuppressWarnings(Array("deprecation")) override def hashCode: Int = {
     val numBlocks: Int = 255
-    var code = this.north.getId
+    var code = north.getId
     code *= numBlocks
-    code += this.south.getId
+    code += south.getId
     code *= numBlocks
-    code += this.east.getId
+    code += east.getId
     code *= numBlocks
-    code += this.west.getId
-    code += this.northD
-    code += this.southD
-    code += this.eastD
-    code += this.westD
+    code += west.getId
+    code += northD
+    code += southD
+    code += eastD
+    code += westD
     code
   }
 }
