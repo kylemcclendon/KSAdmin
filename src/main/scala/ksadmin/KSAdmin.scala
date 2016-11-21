@@ -5,7 +5,6 @@ import java.io.{File, IOException}
 import maintenance.Maintenance
 import org.bukkit.inventory.FurnaceRecipe
 import bonemeal.Bonemeal
-import giant.Giant
 import categorized_warps.CategorizedWarps
 import feather_clip.FeatherClip
 import flower.Flower
@@ -27,7 +26,6 @@ class KSAdmin extends JavaPlugin {
   private val bm = new Bonemeal()
   private val cw = CategorizedWarps(this)
   private val fc = new FeatherClip
-  private val gi = Giant(this)
   private val ht = new HorseTeleport
   private val pvp = new PVP
   private val tim = new Timber
@@ -56,7 +54,6 @@ class KSAdmin extends JavaPlugin {
       settings.set("Exploration", true)
       settings.set("Feather", true)
       settings.set("Flower", true)
-      settings.set("Giant", true)
       settings.set("HorseTeleport", true)
       settings.set("Hyrule", true)
       settings.set("PVP", true)
@@ -98,9 +95,6 @@ class KSAdmin extends JavaPlugin {
     }
     if (this.settings.getBoolean("Flower")) {
       getCommand("flower").setExecutor(new Flower)
-    }
-    if (this.settings.getBoolean("Giant")) {
-      pm.registerEvents(gi, this)
     }
     if (this.settings.getBoolean("HorseTeleport")) {
       pm.registerEvents(ht, this)
