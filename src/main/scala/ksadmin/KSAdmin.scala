@@ -15,6 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.{ItemStack, ShapedRecipe, ShapelessRecipe}
 import org.bukkit.plugin.java.JavaPlugin
 import pvp.PVP
+import restart.net.kylemc.kadmin.Restart
 import runecraft.RunecraftTeles
 import timber.Timber
 
@@ -71,6 +72,7 @@ class KSAdmin extends JavaPlugin {
     if (this.settings.getBoolean("CategorizedWarps")) {
       pm.registerEvents(cw, this)
       getCommand("cwarps").setExecutor(cw)
+      getCommand("shrug").setExecutor(cw)
     }
     if (this.settings.getBoolean("Crafting")) {
       val book = new ShapedRecipe(new ItemStack(Material.BOOK, 1))
@@ -92,7 +94,6 @@ class KSAdmin extends JavaPlugin {
       getServer.addRecipe(leather)
     }
     if (this.settings.getBoolean("Feather")) {
-      println("feather")
       pm.registerEvents(fc, this)
     }
     if (this.settings.getBoolean("Flower")) {
@@ -114,6 +115,8 @@ class KSAdmin extends JavaPlugin {
     if (this.settings.getBoolean("Timber")) {
       pm.registerEvents(tim, this)
     }
+
+    val restart = new Restart(this)
   }
 
   override def onDisable() {

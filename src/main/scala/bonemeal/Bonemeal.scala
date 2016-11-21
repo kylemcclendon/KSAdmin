@@ -4,10 +4,15 @@ import org.bukkit.{ChatColor, GameMode, Material, TreeType}
 import org.bukkit.block.{Block, BlockFace}
 import org.bukkit.event.{EventHandler, Listener}
 import org.bukkit.event.block.Action
-import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.{PlayerChangedWorldEvent, PlayerInteractEvent}
 import org.bukkit.inventory.{EquipmentSlot, ItemStack}
 
 class Bonemeal extends Listener{
+  @EventHandler(ignoreCancelled = true) def onChangeWorld(event: PlayerChangedWorldEvent): Unit ={
+    if(event.getPlayer.getWorld.getName.equals("Aiedail") || event.getPlayer.getWorld.getName.equals("aiedail")){
+      event.getPlayer.setGameMode(GameMode.SURVIVAL)
+    }
+  }
   @SuppressWarnings(Array("deprecation"))
   @EventHandler(ignoreCancelled = true) def onInteract(event: PlayerInteractEvent) {
     if (event.getAction eq Action.RIGHT_CLICK_BLOCK) {

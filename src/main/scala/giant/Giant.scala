@@ -5,20 +5,22 @@ import java.util.Random
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 import scala.collection.JavaConverters.seqAsJavaListConverter
 import ksadmin.KSAdmin
+import net.minecraft.server.v1_11_R1.EnumMoveType
 import org.bukkit.Bukkit
 import org.bukkit.block.Biome
 import org.bukkit.{Location, Material, Sound}
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.{Entity, EntityType, LivingEntity, Player, Zombie}
+import org.bukkit.entity._
 import org.bukkit.inventory.ItemStack
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftGiant
+import org.bukkit.craftbukkit.v1_11_R1.entity.CraftGiant
 import org.bukkit.event.{EventHandler, Listener}
-import org.bukkit.event.entity.{CreatureSpawnEvent, EntityDamageByEntityEvent, EntityDamageEvent, EntityDeathEvent}
+import org.bukkit.event.entity._
 import org.bukkit.plugin.Plugin
 import org.bukkit.potion.{PotionEffect, PotionEffectType}
 import org.bukkit.util.Vector
 import org.bukkit.event.server.PluginDisableEvent
-
+import org.bukkit.entity.Fireball
+import org.bukkit.projectiles.ProjectileSource
 case class Giant(instance: KSAdmin) extends Listener{
   var dropsTable: List[ItemStack] = Nil
   private var listSize = 0
@@ -104,7 +106,7 @@ case class Giant(instance: KSAdmin) extends Listener{
       if (next == 5) {
         val l = event.getLocation
         val g = event.getEntity.getWorld.spawnEntity(l, EntityType.GIANT).asInstanceOf[CraftGiant]
-        g.getHandle.getAttributeInstance(net.minecraft.server.v1_10_R1.GenericAttributes.maxHealth).setValue(200.0D)
+        g.getHandle.getAttributeInstance(net.minecraft.server.v1_11_R1.GenericAttributes.maxHealth).setValue(200.0D)
         g.setHealth(200.0D)
         Bukkit.getWorld(event.getEntity.getWorld.getUID).playSound(l, Sound.ENTITY_ENDERDRAGON_GROWL, 6.0F, 1.0F)
         event.getEntity.remove()
@@ -149,7 +151,7 @@ case class Giant(instance: KSAdmin) extends Listener{
   private def giantLeap(l: Location, giant: CraftGiant) {
     giant.setVelocity(new Vector(0, 0, 0))
     l.getWorld.playSound(l, Sound.ENTITY_ENDERDRAGON_FLAP, 6.0F, 0.1F)
-    giant.getHandle.move(0.0D, 20.0D, 0.0D)
+    giant.getHandle.move(EnumMoveType.SELF, .0D, 20.0D, 0.0D)
   }
 
   private def giantStomp(l: Location, giant: CraftGiant) {
@@ -175,8 +177,8 @@ case class Giant(instance: KSAdmin) extends Listener{
         for (p <- close) {
           p.damage(20.0D, giant)
           p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 1))
-          p.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 1))
-          p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 1))
+          p.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS,200,0))
+          p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 2))
           pushAway(p, 3.0D, giant)
         }
       }
@@ -200,8 +202,8 @@ case class Giant(instance: KSAdmin) extends Listener{
     for (p <- players) if (getDistance(l, p.getLocation) <= 20.0D) {
       l.getWorld.playSound(l, Sound.ENTITY_ENDERDRAGON_GROWL, 6.0F, 0.7F)
       p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 1))
-      p.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 2))
-      p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 2))
+      p.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 0))
+      p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 1))
     }
   }
 
@@ -214,6 +216,56 @@ case class Giant(instance: KSAdmin) extends Listener{
           else
             player.setVelocity(new Vector(0.0D, 1.5D, 0.0D))
         }
+    }
+  }
+
+  @EventHandler
+  private def giantArrowDamage(event: EntityDamageByEntityEvent){
+    if(event.getEntityType.equals(EntityType.GIANT)){
+      if(event.getDamager.getType.equals(EntityType.ARROW) && event.getDamager.asInstanceOf[Arrow].getShooter.isInstanceOf[Player]){
+        val e = event.getEntity
+        var eloc = e.getLocation()
+        e.getWorld.playSound(eloc,Sound.ENTITY_POLAR_BEAR_DEATH, 10, 0.1F)
+        eloc = eloc.add(0,10,0)
+        val p = event.getDamager.asInstanceOf[Arrow].getShooter.asInstanceOf[Player]
+        val loc = p.getLocation
+
+        val fireballChance = Math.random()*2
+
+        if(fireballChance.toInt == 1) {
+          val fireball = eloc.getWorld.spawn(eloc, classOf[Fireball])
+          fireball.setIsIncendiary(false)
+          fireball.setYield(3)
+          fireball.setShooter(e.asInstanceOf[ProjectileSource])
+
+          val vector = loc.toVector().subtract(eloc.toVector())
+          fireball.setDirection(vector.normalize().multiply(2))
+        }
+      }
+    }
+    else if(event.getEntityType.equals(EntityType.ZOMBIE)){
+      if(event.getDamager.isInstanceOf[Fireball]){
+        val f = event.getDamager.asInstanceOf[Fireball]
+        if(f.getShooter.isInstanceOf[CraftGiant]){
+          event.setCancelled(true)
+        }
+      }
+    }
+  }
+
+  @EventHandler
+  private def giantFireball(event: EntityExplodeEvent ): Unit ={
+    if(event.getEntityType.equals(EntityType.FIREBALL)){
+      val f = event.getEntity.asInstanceOf[Fireball]
+      val floc = event.getLocation
+      if(f.getShooter.isInstanceOf[CraftGiant]){
+        val babies = Math.floor(Math.random()*3)
+        if(babies == 1){
+          f.getWorld.spawnEntity(floc, EntityType.ZOMBIE).asInstanceOf[Zombie].setBaby(true)
+          f.getWorld.spawnEntity(floc, EntityType.ZOMBIE).asInstanceOf[Zombie].setBaby(true)
+          f.getWorld.spawnEntity(floc, EntityType.ZOMBIE).asInstanceOf[Zombie].setBaby(true)        }
+        event.setCancelled(true)
+      }
     }
   }
 
@@ -290,7 +342,7 @@ case class Giant(instance: KSAdmin) extends Listener{
           p.damage(35.0D, event.getEntity)
           p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 1))
           p.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 1))
-          p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 1))
+          p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 2))
           pushAway(p, 7.0D, event.getEntity)
         }
         event.setCancelled(true)

@@ -65,61 +65,64 @@ case class CategorizedWarps(instance: KSAdmin) extends Listener with CommandExec
             sender.sendMessage(ChatColor.GOLD + "----------Format: Warp - Builder(s)/Description----------")
             var i = 1
             while (i < 10) {
-            {
-              if (i >= warp.length) {
-                return true
+              {
+                if (i >= warp.length) {
+                  return true
+                }
+                sender.sendMessage(ChatColor.AQUA + warp(i - 1) + " - " + warp(i))
               }
-              sender.sendMessage(ChatColor.AQUA + warp(i - 1) + " - " + warp(i))
+              i += 2
             }
-            i += 2
           }
+          else {
+            sender.sendMessage(ChatColor.RED + "Invalid Category")
+          }
+        }
+        else if (args.length == 2) {
+          if (args(0).equalsIgnoreCase("info") && sender.getName.equals("@")) {
+            val x = args(1)
+            val p = Bukkit.getServer.getPlayer(x)
+            onCommand(p, cmd, "", new Array[String](0))
+            return true
+          }
+          if (args(1).matches("[0-9]+")) {
+            try {
+              val num = args(1).toInt
+              val pnum = (num - 1) * 10
+              val cat = args(0).toLowerCase
+              if (warps.get(cat).isDefined) {
+                val h = warps(cat)
+                val category = categories(cat)
+                sender.sendMessage(ChatColor.GOLD + "---------------" + category + " Page: " + num + "/" + Math.ceil(h.length / 10.0D).toInt + "---------------")
+                sender.sendMessage(ChatColor.GOLD + "----------Format: Warp - Builder(s)/Description----------")
+                var i: Int = 0
+                while (i < 10) {
+                  {
+                    if (pnum + i >= h.length) {
+                      return true
+                    }
+                    sender.sendMessage(ChatColor.AQUA + h(pnum + i) + " - " + h(pnum + (i + 1)))
+                  }
+                  i += 2
+                }
+              }
+              else {
+                sender.sendMessage(ChatColor.RED + "Invalid Category")
+              }
+            }
+            catch {
+              case e: NumberFormatException => sender.sendMessage(ChatColor.RED + "Number is too large!"); return true
+            }
+          }
+          sender.sendMessage(ChatColor.RED + "Invalid Number")
         }
         else {
-          sender.sendMessage(ChatColor.RED + "Invalid Category")
+          sender.sendMessage(ChatColor.RED + "Usage: /cwarps [category] [page number]")
         }
-      }
-      else if (args.length == 2) {
-        if (args(0).equalsIgnoreCase("info") && sender.getName.equals("@")) {
-          val x = args(1)
-          val p = Bukkit.getServer.getPlayer(x)
-          onCommand(p, cmd, "", new Array[String](0))
-          return true
-        }
-        if (args(1).matches("[0-9]+")) {
-          try {
-            val num = args(1).toInt
-            val pnum = (num - 1) * 10
-            val cat = args(0).toLowerCase
-            if (warps.get(cat).isDefined) {
-              val h = warps(cat)
-              val category = categories(cat)
-              sender.sendMessage(ChatColor.GOLD + "---------------" + category + " Page: " + num + "/" + Math.ceil(h.length / 10.0D).toInt + "---------------")
-              sender.sendMessage(ChatColor.GOLD + "----------Format: Warp - Builder(s)/Description----------")
-              var i: Int = 0
-              while (i < 10) {
-                {
-                  if (pnum + i >= h.length) {
-                    return true
-                  }
-                  sender.sendMessage(ChatColor.AQUA + h(pnum + i) + " - " + h(pnum + (i + 1)))
-                }
-                i += 2
-              }
-            }
-            else {
-              sender.sendMessage(ChatColor.RED + "Invalid Category")
-            }
-          }
-          catch {
-            case e: NumberFormatException => sender.sendMessage(ChatColor.RED + "Number is too large!"); return true
-          }
-        }
-        sender.sendMessage(ChatColor.RED + "Invalid Number")
-      }
-      else {
-        sender.sendMessage(ChatColor.RED + "Usage: /cwarps [category] [page number]")
-      }
-      return true
+        return true
+      case "shrug" =>
+        Bukkit.getServer.broadcastMessage(ChatColor.YELLOW + sender.getName + " ¯\\_(ツ)_/¯")
+        return true
     }
     false
   }
@@ -127,11 +130,7 @@ case class CategorizedWarps(instance: KSAdmin) extends Listener with CommandExec
   @EventHandler def setWarpListen(event: PlayerCommandPreprocessEvent) {
     val msg: String = event.getMessage
     val parts = msg.split(" ")
-    if (!event.getPlayer.isOp && parts.length > 1 && parts(0).equalsIgnoreCase("/warps") && parts(1).equalsIgnoreCase("list")) {
-      event.getPlayer.sendMessage(ChatColor.RED + "Please use '/cwarps' to access the warps list")
-      event.setCancelled(true)
-    }
-    else if (event.getPlayer.isOp && (parts.length == 2) && parts(0).equalsIgnoreCase("/setwarp")) {
+    if (event.getPlayer.isOp && (parts.length == 2) && parts(0).equalsIgnoreCase("/setwarp")) {
       val warp = parts(1)
       try {
         val fStream = new FileWriter(newWarps, true)

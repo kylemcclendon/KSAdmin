@@ -17,6 +17,9 @@ commands:
    quartz:
       description: Trades 10 NetherRack for 1 Quartz
       usage: /quartz
+   shrug:
+      description: Produces a shrug emoticon
+      usage: /shrug
 
 permissions:
   kadmin.*:
