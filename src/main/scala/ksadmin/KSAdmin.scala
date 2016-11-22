@@ -15,7 +15,6 @@ import org.bukkit.inventory.{ItemStack, ShapedRecipe, ShapelessRecipe}
 import org.bukkit.plugin.java.JavaPlugin
 import pvp.PVP
 import restart.net.kylemc.kadmin.Restart
-import runecraft.RunecraftTeles
 import timber.Timber
 
 class KSAdmin extends JavaPlugin {
@@ -29,7 +28,6 @@ class KSAdmin extends JavaPlugin {
   private val ht = new HorseTeleport
   private val pvp = new PVP
   private val tim = new Timber
-  private var rune: RunecraftTeles = null
 
   override def onEnable() = {
     val pm = getServer.getPluginManager
@@ -57,7 +55,6 @@ class KSAdmin extends JavaPlugin {
       settings.set("HorseTeleport", true)
       settings.set("Hyrule", true)
       settings.set("PVP", true)
-      settings.set("Runecraft", true)
       settings.set("Timber", true)
       saveSettings
     }
@@ -102,10 +99,6 @@ class KSAdmin extends JavaPlugin {
     if (this.settings.getBoolean("PVP")) {
       pm.registerEvents(pvp, this)
     }
-    if (this.settings.getBoolean("Runecraft")) {
-      rune = new RunecraftTeles(dFolder.get)
-      pm.registerEvents(rune, this)
-    }
     if (this.settings.getBoolean("Timber")) {
       pm.registerEvents(tim, this)
     }
@@ -114,9 +107,6 @@ class KSAdmin extends JavaPlugin {
   }
 
   override def onDisable() {
-    if (this.settings.getBoolean("Runecraft") && rune != null) {
-      rune.writeToFiles()
-    }
     getLogger.info("Kadmin disabled")
   }
 
