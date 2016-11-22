@@ -67,6 +67,7 @@ class KSAdmin extends JavaPlugin {
       pm.registerEvents(cw, this)
       getCommand("cwarps").setExecutor(cw)
       getCommand("shrug").setExecutor(cw)
+      getCommand("quartz").setExecutor(cw)
     }
     if (this.settings.getBoolean("Crafting")) {
       val book = new ShapedRecipe(new ItemStack(Material.BOOK, 1))

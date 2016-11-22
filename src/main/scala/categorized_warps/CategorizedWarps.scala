@@ -3,14 +3,15 @@ package categorized_warps
 import java.io.{File, FileWriter, IOException}
 
 import ksadmin.KSAdmin
-
-import org.bukkit.{Bukkit, ChatColor}
+import org.bukkit.{Bukkit, ChatColor, Material}
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 
 case class CategorizedWarps(instance: KSAdmin) extends Listener with CommandExecutor{
@@ -123,6 +124,34 @@ case class CategorizedWarps(instance: KSAdmin) extends Listener with CommandExec
       case "shrug" =>
         Bukkit.getServer.broadcastMessage(ChatColor.YELLOW + sender.getName + " ¯\\_(ツ)_/¯")
         return true
+      case "quartz" =>
+        sender match {
+          case player: Player =>
+            if(player.getInventory.getItemInMainHand.getType.equals(Material.NETHERRACK)) {
+              if(player.getInventory.getItemInMainHand.getAmount > 9){
+                player.getInventory.addItem(new ItemStack(Material.QUARTZ, 1))
+                if(player.getInventory.getItemInMainHand.getAmount == 10){
+                  player.getInventory.setItemInMainHand(null)
+                  return true
+                }
+                else {
+                  player.getInventory.getItemInMainHand.setAmount(player.getInventory.getItemInMainHand.getAmount - 10)
+                  return true
+                }
+              }
+              else{
+                sender.sendMessage(ChatColor.RED + "You need at least 10 Netherrack")
+                return true
+              }
+            }
+            else{
+              sender.sendMessage(ChatColor.RED + "You need to hold at least 10 netherrack")
+              return true
+            }
+          case _ =>
+            sender.sendMessage(ChatColor.RED + "Only in-game players can use this")
+            return true
+        }
     }
     false
   }
