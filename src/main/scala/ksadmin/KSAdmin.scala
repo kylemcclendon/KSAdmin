@@ -6,6 +6,7 @@ import maintenance.Maintenance
 import org.bukkit.inventory.FurnaceRecipe
 import bonemeal.Bonemeal
 import categorized_warps.CategorizedWarps
+import chest_protect.ChestProtect
 import feather_clip.FeatherClip
 import flower.Flower
 import horse_teleport.HorseTeleport
@@ -28,6 +29,7 @@ class KSAdmin extends JavaPlugin {
   private val ht = new HorseTeleport
   private val pvp = new PVP
   private val tim = new Timber
+  private val cp = new ChestProtect
 
   override def onEnable() = {
     val pm = getServer.getPluginManager
@@ -48,6 +50,7 @@ class KSAdmin extends JavaPlugin {
       settings = new YamlConfiguration()
       settings.set("Bonemeal", true)
       settings.set("CategorizedWarps", true)
+      settings.set("ChestProtect", true)
       settings.set("Crafting", true)
       settings.set("Exploration", true)
       settings.set("Feather", true)
@@ -60,6 +63,7 @@ class KSAdmin extends JavaPlugin {
     }
 
     this.settings = YamlConfiguration.loadConfiguration(this.settingsFile)
+    pm.registerEvents(cp, this)
     if (this.settings.getBoolean("Bonemeal")) {
       pm.registerEvents(bm, this)
     }
