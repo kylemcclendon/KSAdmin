@@ -15,7 +15,8 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.{ItemStack, ShapedRecipe, ShapelessRecipe}
 import org.bukkit.plugin.java.JavaPlugin
 import pvp.PVP
-import restart.net.kylemc.kadmin.Restart
+import restart.Restart
+import webhook.WebhookIntegration
 import timber.Timber
 
 class KSAdmin extends JavaPlugin {
@@ -30,6 +31,7 @@ class KSAdmin extends JavaPlugin {
   private val pvp = new PVP
   private val tim = new Timber
   private val cp = new ChestProtect
+  private val wi = new WebhookIntegration
 
   override def onEnable() = {
     val pm = getServer.getPluginManager
@@ -64,6 +66,7 @@ class KSAdmin extends JavaPlugin {
 
     this.settings = YamlConfiguration.loadConfiguration(this.settingsFile)
     pm.registerEvents(cp, this)
+    pm.registerEvents(wi, this)
     if (this.settings.getBoolean("Bonemeal")) {
       pm.registerEvents(bm, this)
     }
@@ -108,10 +111,11 @@ class KSAdmin extends JavaPlugin {
       pm.registerEvents(tim, this)
     }
 
-    val restart = new Restart(this)
+    val restart = Restart(this)
   }
 
   override def onDisable() {
+    wi.closeClient()
     getLogger.info("Kadmin disabled")
   }
 

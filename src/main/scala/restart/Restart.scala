@@ -1,5 +1,4 @@
 package restart
-package net.kylemc.kadmin
 
 import java.util.logging.Logger
 
@@ -9,7 +8,7 @@ import org.bukkit.{Bukkit, ChatColor, scheduler}
 import org.bukkit.scheduler.BukkitRunnable
 
 case class Restart(instance: KSAdmin) {
-  val log = Logger.getLogger("Minecraft")
+  val log: Logger = Logger.getLogger("Minecraft")
   private var remaining: Int = 60
   var plugin: Plugin = instance
   initRestarts()
