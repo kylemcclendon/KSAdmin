@@ -9,14 +9,6 @@ import org.bukkit.event.player.{PlayerItemConsumeEvent, PlayerTeleportEvent}
 
 class PVP extends Listener {
   @EventHandler(ignoreCancelled = true)
-  private def onSnowballHit(event: EntityDamageByEntityEvent) {
-    if (event.getDamager.isInstanceOf[Snowball]) {
-      val p: Player = event.getEntity.asInstanceOf[Player]
-      p.setHealth(Math.min(0, p.getHealth - 1.0D))
-    }
-  }
-
-  @EventHandler(ignoreCancelled = true)
   private def onEat(event: PlayerItemConsumeEvent) {
     val mat: Material = event.getItem.getType
     if(mat.equals(Material.ROTTEN_FLESH) || mat.equals(Material.SPIDER_EYE) || mat.equals(Material.POTION)) {

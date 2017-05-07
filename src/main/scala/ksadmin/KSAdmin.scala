@@ -111,6 +111,8 @@ class KSAdmin extends JavaPlugin {
       pm.registerEvents(tim, this)
     }
 
+    getCommand("msgOps").setExecutor(wi)
+
     val restart = Restart(this)
   }
 

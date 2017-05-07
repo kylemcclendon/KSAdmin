@@ -1,6 +1,6 @@
 name: KSAdmin
 main: ksadmin.KSAdmin
-version: 1.0
+version: 1.1.0
 
 depend: [Multiverse-Core]
 
@@ -14,6 +14,10 @@ commands:
    ls:
       description: Lists Online Players
       usage: /ls
+   msgOps:
+      description: Messages Ops Through Discord
+      usage: /msgOps <message>
+      alias: [msgDiscord]
    quartz:
       description: Trades 10 NetherRack for 1 Quartz
       usage: /quartz
