@@ -20,7 +20,7 @@ class WebhookIntegration extends Listener with CommandExecutor {
   def placeTNT(event: BlockPlaceEvent) {
     if (event.getBlock.getType.equals(Material.TNT)) {
       val location = event.getBlock.getLocation
-      val message = s"{${event.getPlayer.getName} placed tnt at: ${location.getWorld.getName}: ${location.getX},${location.getY},${location.getZ}}"
+      val message = s"{WARNING: ${event.getPlayer.getName} placed tnt at: ${location.getWorld.getName}: ${location.getX},${location.getY},${location.getZ}}"
 
       val f = Future {
         var httpPost = new HttpPost("https://discordapp.com/api/webhooks/287113395663142912/-DCEbdI5IY0tH-UhsiXUy28lTYqhxM4QOzNVRklDD85RDu9k0HJ-rqoh6EWwKOoaSqUU")
@@ -36,7 +36,7 @@ class WebhookIntegration extends Listener with CommandExecutor {
   @EventHandler(ignoreCancelled = true)
   def lavaBucket(event: PlayerBucketEmptyEvent): Unit = {
     val location = event.getPlayer.getLocation
-    val message = s"{${event.getPlayer.getName} poured lava at: ${location.getWorld.getName}: ${location.getX},${location.getY},${location.getZ}}"
+    val message = s"{WARNING: ${event.getPlayer.getName} poured lava at: ${location.getWorld.getName}: ${location.getX},${location.getY},${location.getZ}}"
 
     if (event.getBucket.equals(Material.LAVA_BUCKET)) {
       val f = Future {
@@ -74,7 +74,7 @@ class WebhookIntegration extends Listener with CommandExecutor {
   override def onCommand(sender: CommandSender, command: Command, label: String, args: Array[String]): Boolean = {
     if (command.getName.equals("msgOps")) {
       if (args.length > 0) {
-        var message = args.mkString(" ")
+        var message = s"""HELP ${sender.getName}: ${args.mkString(" ")}"""
         var httpPost = new HttpPost("https://discordapp.com/api/webhooks/287113395663142912/-DCEbdI5IY0tH-UhsiXUy28lTYqhxM4QOzNVRklDD85RDu9k0HJ-rqoh6EWwKOoaSqUU")
         val params = new StringEntity(s"""{\"content\":\"$message\"}""")
         params.setContentType("application/json")
