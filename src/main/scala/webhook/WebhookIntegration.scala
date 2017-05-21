@@ -50,23 +50,6 @@ class WebhookIntegration extends Listener with CommandExecutor {
     }
   }
 
-  @EventHandler
-  def onAllCapsChat(event: AsyncPlayerChatEvent): Unit = {
-    val message = event.getMessage
-
-    if (message.matches("^([A-Z.\\s\\d!;.,:]){10,}$")) {
-      val f = Future {
-        val capsMessage = event.getPlayer.getName + ": " + message
-        var httpPost = new HttpPost("https://discordapp.com/api/webhooks/287113395663142912/-DCEbdI5IY0tH-UhsiXUy28lTYqhxM4QOzNVRklDD85RDu9k0HJ-rqoh6EWwKOoaSqUU")
-        val params = new StringEntity(s"""{\"content\":\"$capsMessage\"}""")
-        params.setContentType("application/json")
-        httpPost.setEntity(params)
-
-        httpClient.execute(httpPost)
-      }
-    }
-  }
-
   def closeClient(): Unit = {
     httpClient.close()
   }
@@ -74,7 +57,7 @@ class WebhookIntegration extends Listener with CommandExecutor {
   override def onCommand(sender: CommandSender, command: Command, label: String, args: Array[String]): Boolean = {
     if (command.getName.equals("msgOps")) {
       if (args.length > 0) {
-        var message = s"""HELP ${sender.getName}: ${args.mkString(" ")}"""
+        var message = s"""${sender.getName}: ${args.mkString(" ")}"""
         var httpPost = new HttpPost("https://discordapp.com/api/webhooks/287113395663142912/-DCEbdI5IY0tH-UhsiXUy28lTYqhxM4QOzNVRklDD85RDu9k0HJ-rqoh6EWwKOoaSqUU")
         val params = new StringEntity(s"""{\"content\":\"$message\"}""")
         params.setContentType("application/json")
