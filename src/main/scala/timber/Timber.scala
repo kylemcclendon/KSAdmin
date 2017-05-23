@@ -8,6 +8,7 @@ import org.bukkit.event.block.{Action, BlockBreakEvent}
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.{EquipmentSlot, ItemStack}
 import org.bukkit.Location
+import org.bukkit.enchantments.Enchantment
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters.collectionAsScalaIterableConverter
@@ -27,7 +28,12 @@ class Timber extends Listener{
             block.getWorld.dropItemNaturally(block.getLocation, i)
           }
         }
-        player.getInventory.setItemInMainHand(afterMine(block, item, player, 1))
+        val durability = afterMine(block, item, player, 1)
+        if (durability >= 33) {
+          player.getWorld.playSound(player.getLocation, Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F)
+          player.getInventory.setItemInMainHand(null)
+        }
+        player.getInventory.getItemInMainHand.setDurability(durability)
         event.setCancelled(true)
       }
       else if (block.getType.equals(Material.GOLD_ORE)) {
@@ -39,7 +45,12 @@ class Timber extends Listener{
             block.getWorld.dropItemNaturally(block.getLocation, i)
           }
         }
-        player.getInventory.setItemInMainHand(afterMine(block, item, player, 1))
+        val durability = afterMine(block, item, player, 1)
+        if (durability >= 33) {
+          player.getWorld.playSound(player.getLocation, Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F)
+          player.getInventory.setItemInMainHand(null)
+        }
+        player.getInventory.getItemInMainHand.setDurability(durability)
         event.setCancelled(true)
       }
       else if (block.getType.equals(Material.STONE)) {
@@ -51,7 +62,12 @@ class Timber extends Listener{
             block.getWorld.dropItemNaturally(block.getLocation, i)
           }
         }
-        player.getInventory.setItemInMainHand(afterMine(block, item, player, 1))
+        val durability = afterMine(block, item, player, 1)
+        if (durability >= 33) {
+          player.getWorld.playSound(player.getLocation, Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F)
+          player.getInventory.setItemInMainHand(null)
+        }
+        player.getInventory.getItemInMainHand.setDurability(durability)
         event.setCancelled(true)
       }
     }
@@ -65,7 +81,12 @@ class Timber extends Listener{
             block.getWorld.dropItemNaturally(block.getLocation, i)
           }
         }
-        player.getInventory.setItemInMainHand(afterMine(block, item, player, 1))
+        val durability = afterMine(block, item, player, 1)
+        if (durability >= 33) {
+          player.getWorld.playSound(player.getLocation, Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F)
+          player.getInventory.setItemInMainHand(null)
+        }
+        player.getInventory.getItemInMainHand.setDurability(durability)
         event.setCancelled(true)
       }
     }
@@ -73,12 +94,19 @@ class Timber extends Listener{
       val treeBlocks: List[Block] = treeWalk(block, 2147483646)
       if (treeBlocks.nonEmpty) {
         val logs = for (bl <- treeBlocks) yield {
+          val blockType = bl.getType
           if (bl != null) {
             bl.breakNaturally
           }
-          if (bl.getType.equals(Material.LOG) || bl.getType.equals(Material.LOG_2)) 1 else 0
+          if (blockType.equals(Material.LOG) || blockType.equals(Material.LOG_2)) 1 else 0
         }
-        player.getInventory.setItemInMainHand(afterMine(block, item, player, logs.sum / 20 + 1))
+
+        val durability = afterMine(block, item, player, logs.sum / 20 + 1)
+        if (durability >= 33) {
+          player.getWorld.playSound(player.getLocation, Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F)
+          player.getInventory.setItemInMainHand(null)
+        }
+        player.getInventory.getItemInMainHand.setDurability(durability)
       }
     }
   }
@@ -167,20 +195,15 @@ class Timber extends Listener{
     }
   }
 
-  private def afterMine(block: Block, i: ItemStack, p: Player, durabilityIncrement: Int): ItemStack = {
+  private def afterMine(block: Block, i: ItemStack, p: Player, durabilityIncrement: Int): Short = {
     block.getDrops.clear()
     block.setType(Material.AIR)
     if (p.getGameMode ne GameMode.CREATIVE) {
-      if (i.getDurability >= 33) {
-        p.getWorld.playSound(p.getLocation, Sound.ENTITY_ITEM_BREAK, 1.0F, 1.0F)
-        null
-      }
-      else{
-        new ItemStack(i.getType, 1, (i.getDurability + durabilityIncrement).asInstanceOf[Short])
-      }
+      val durabilityModifier: Float = (100F/(i.getEnchantmentLevel(Enchantment.DURABILITY)+1))/100F
+      (i.getDurability + Math.max(durabilityIncrement*durabilityModifier, 1)).asInstanceOf[Short]
     }
     else{
-      i
+      i.getDurability
     }
   }
 }
